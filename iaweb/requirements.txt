@@ -1,0 +1,7 @@
+Django==5.2.8
+gunicorn
+psycopg2-binary
+whitenoise
+# TensorFlow is required to load your Keras model; including it will make the image large.
+# You can pin a version you tested locally (e.g. tensorflow==2.14.0) or remove it if model served elsewhere.
+tensorflow
