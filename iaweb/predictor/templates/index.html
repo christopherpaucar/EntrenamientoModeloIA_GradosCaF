@@ -58,11 +58,16 @@
             50% { transform: translateY(-20px) rotate(5deg); }
         }
 
-        .container {
+        .page-grid {
             position: relative;
             z-index: 1;
+            display: grid;
+            grid-template-columns: 480px 560px;
+            gap: 28px;
+            align-items: flex-start;
             width: 100%;
-            max-width: 480px;
+            max-width: 1100px;
+            margin: 0 auto;
         }
 
         .card {
@@ -242,6 +247,17 @@
             border: 2px solid #bae6fd;
         }
 
+        .fallback-note {
+            margin-top:10px;
+            font-size:13px;
+            color:#b45309;
+            background: #fff7ed;
+            border: 1px solid #ffedd5;
+            padding:8px 12px;
+            border-radius:10px;
+            text-align:center;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
@@ -291,10 +307,162 @@
             font-weight: 600;
         }
 
+        .info-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 24px 28px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 18px;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .info-card h2 {
+            color: #1a1a2e;
+            font-size: 18px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .formula-text {
+            font-size: 20px;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .formula-text strong {
+            color: #1a1a2e;
+            font-weight: 700;
+        }
+
+        .chart-container {
+            height: 220px;
+            margin-top: 8px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: inherit;
+        }
+
+        .history-table thead tr {
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .history-table th {
+            padding: 10px 8px;
+            color: #334155;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .history-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .history-table td {
+            padding: 12px 8px;
+            font-size: 14px;
+        }
+
+        .history-table .date-col {
+            color: #64748b;
+        }
+
+        .history-table .celsius-col {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .history-table .fahrenheit-col {
+            color: #0369a1;
+            font-weight: 700;
+        }
+
+        .history-scroll {
+            overflow-y: auto;
+            overflow-x: hidden;
+            max-height: 240px;
+        }
+        
+        .history-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .history-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        
+        .history-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        
+        .history-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+        }
+        
+        .info-card.history-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-empty {
+            padding: 20px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .clear-btn {
+            background: #f3f4f6;
+            color: #334155;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .clear-btn:hover {
+            background: #e5e7eb;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .header-row h2 {
+            margin: 0;
+        }
+
+        @media (max-width: 1100px) {
+            .page-grid {
+                grid-template-columns: 1fr;
+                max-width: 520px;
+            }
+        }
+
         @media (max-width: 480px) {
-            .card {
-                padding: 36px 28px;
-                border-radius: 24px;
+            .card, .info-card {
+                padding: 28px 24px;
+                border-radius: 20px;
             }
 
             h1 {
@@ -308,47 +476,178 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <div class="icon-wrapper">
-                <div class="icon">
-                    <img src="https://cdn-icons-png.flaticon.com/512/1684/1684375.png" alt="temperatura">
+    <div class="page-grid">
+        <!-- Columna izquierda: Conversor -->
+        <div>
+            <div class="card">
+                <div class="icon-wrapper">
+                    <div class="icon">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1684/1684375.png" alt="temperatura">
+                    </div>
+                </div>
+                
+                <h1>Conversor de Temperatura</h1>
+                <p class="subtitle">Convierte grados Celsius a Fahrenheit al instante</p>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <label class="input-label">Temperatura en Celsius</label>
+                        <input type="number" step="0.01" name="valor" placeholder="Ej: 25.5" required>
+                    </div>
+                    
+                    <button type="submit">
+                        Convertir ahora
+                    </button>
+                </form>
+                
+                {% if resultado %}
+                    <div class="resultado">
+                        <div class="resultado-label">Resultado</div>
+                        <div class="resultado-value">{{ resultado|floatformat:2 }}°F</div>
+                    </div>
+                    
+                    <div class="conversion-info">
+                        <div class="info-item">
+                            <div class="info-label">Escala</div>
+                            <div class="info-value">Fahrenheit</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Precisión</div>
+                            <div class="info-value">±0.01°</div>
+                        </div>
+                    </div>
+                    {% if used_fallback %}
+                    <div class="fallback-note">
+                        La predicción se calculó usando la fórmula clásica (fallback). El modelo no pudo ejecutarse en este entorno.
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Columna derecha: Información adicional -->
+        <div class="right-column">
+            <!-- Fórmula aproximada -->
+            <div class="info-card">
+                <h2>Fórmula Aproximada Aprendida</h2>
+                <p class="formula-text">F = C × <strong>1.8</strong> + 32</p>
+            </div>
+
+            <!-- Gráfico de entrenamiento -->
+            <div class="info-card">
+                <h2>Gráfico de Entrenamiento</h2>
+                <div class="chart-container">
+                    <canvas id="lossChart"></canvas>
                 </div>
             </div>
-            
-            <h1>Conversor de Temperatura</h1>
-            <p class="subtitle">Convierte grados Celsius a Fahrenheit al instante</p>
-            
-            <form method="POST">
-                {% csrf_token %}
-                <div class="input-group">
-                    <label class="input-label">Temperatura en Celsius</label>
-                    <input type="number" step="0.01" name="valor" placeholder="Ej: 25.5" required>
+
+            <!-- Historial -->
+            <div class="info-card history-card">
+                <div class="header-row">
+                    <h2>Historial de Conversiones</h2>
+                    <form method="POST" style="margin:0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="clear_history" value="1">
+                        <button type="submit" class="clear-btn">Limpiar</button>
+                    </form>
                 </div>
-                
-                <button type="submit">
-                    Convertir ahora
-                </button>
-            </form>
-            
-            {% if resultado %}
-                <div class="resultado">
-                    <div class="resultado-label">Resultado</div>
-                    <div class="resultado-value">{{ resultado|floatformat:2 }}°F</div>
+                <div class="history-scroll">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha (UTC)</th>
+                                <th>Celsius</th>
+                                <th>Fahrenheit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for e in history %}
+                            <tr>
+                                <td class="date-col">{{ e.when|slice:":19" }}</td>
+                                <td class="celsius-col">{{ e.celsius }}°C</td>
+                                <td class="fahrenheit-col">{{ e.fahrenheit }}°F</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="history-empty">
+                                    Aún no hay conversiones en el historial
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                
-                <div class="conversion-info">
-                    <div class="info-item">
-                        <div class="info-label">Escala</div>
-                        <div class="info-value">Fahrenheit</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Precisión</div>
-                        <div class="info-value">±0.01°</div>
-                    </div>
-                </div>
-            {% endif %}
+            </div>
         </div>
     </div>
+
+    <!-- Chart.js -->
+    <script id="loss-data" type="application/json">{{ loss_json|default:'[]'|safe }}</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function(){
+            let lossData = [];
+            try {
+                const raw = document.getElementById('loss-data').textContent || '[]';
+                lossData = JSON.parse(raw);
+            } catch(e){ 
+                lossData = []; 
+            }
+            
+            const ctx = document.getElementById('lossChart');
+            if (ctx && lossData.length) {
+                new Chart(ctx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: lossData.map((v,i)=>i+1),
+                        datasets: [{
+                            label: 'Pérdida (Loss)',
+                            data: lossData,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102,126,234,0.1)',
+                            pointRadius: 0,
+                            borderWidth: 2.5,
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { 
+                                display: true,
+                                grid: { display: false },
+                                ticks: { 
+                                    maxTicksLimit: 8,
+                                    color: '#64748b',
+                                    font: { size: 11 }
+                                }
+                            },
+                            y: { 
+                                beginAtZero: true,
+                                grid: { color: '#f1f5f9' },
+                                ticks: { 
+                                    color: '#64748b',
+                                    font: { size: 11 }
+                                }
+                            }
+                        },
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#1e293b',
+                                padding: 10,
+                                cornerRadius: 8,
+                                titleFont: { size: 13, weight: '600' },
+                                bodyFont: { size: 12 }
+                            }
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
